@@ -18,8 +18,6 @@ async def sign_new_user(data: User) -> dict:
 
 @router.post("/signin")
 async def sign_user_in(user:UserSignIn)->dict:
-    # print(user.email,users)
-    # print(users[user.email])
     if user.email not in users:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
