@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Body, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status, Depends
 from models.events import Event, EventUpdate
 from typing import List
 
 from beanie import PydanticObjectId
 from database.connection import Database
+from auth.authenticate import authenticate
 
 event_database = Database(Event)
 
@@ -11,13 +12,13 @@ router = APIRouter(tags=['Events'])
 
 
 @router.get("/", response_model=List[Event])
-async def retrieve_all_events() -> List[Event]:
+async def retrieve_all_events(user: str = Depends(authenticate)) -> List[Event]:
     events = await event_database.get_all()
     return events
 
 
-@router.get("/{id}",response_model=Event)
-async def retrieve_event(id: PydanticObjectId) -> Event:
+@router.get("/{id}", response_model=Event)
+async def retrieve_event(id: PydanticObjectId, user: str = Depends(authenticate)) -> Event:
     event = await event_database.get(id)
     if not event:
         raise HTTPException(
@@ -28,7 +29,7 @@ async def retrieve_event(id: PydanticObjectId) -> Event:
 
 
 @router.post("/new")
-async def create_event(body: Event) -> dict:
+async def create_event(body: Event, user: str = Depends(authenticate)) -> dict:
     await event_database.save(body)
     return {
         "message": "Event created Successfully."
@@ -36,7 +37,7 @@ async def create_event(body: Event) -> dict:
 
 
 @router.put("/{id}", response_model=Event)
-async def update_event(id: PydanticObjectId, body: EventUpdate) -> Event:
+async def update_event(id: PydanticObjectId, body: EventUpdate, user: str = Depends(authenticate)) -> Event:
     updated_event = await event_database.update(id, body)
     if not updated_event:
         raise HTTPException(
@@ -47,7 +48,7 @@ async def update_event(id: PydanticObjectId, body: EventUpdate) -> Event:
 
 
 @router.delete("/{id}")
-async def delete_event(id: int) -> dict:
+async def delete_event(id: int, user: str = Depends(authenticate)) -> dict:
     event = await event_database.delete(id)
     if not event:
         raise HTTPException(
@@ -58,6 +59,6 @@ async def delete_event(id: int) -> dict:
 
 
 @router.delete("/")
-async def delete_all_events() -> dict:
+async def delete_all_events(user: str = Depends(authenticate)) -> dict:
     event = await event_database.delete
     return {"message": "Events deleted successfully."}

@@ -4,6 +4,11 @@ from models.events import Event
 from beanie import Document, Link
 
 
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
+
+
 class User(Document):
     email: EmailStr
     password: str
