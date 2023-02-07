@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from routes.users import router as user_router
 from routes.events import router as events_router
 from database.connection import Settings
-from database.database import Settings as database_settings
 
 import uvicorn
 
