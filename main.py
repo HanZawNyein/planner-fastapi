@@ -26,7 +26,7 @@ app.include_router(events_router, prefix="/event")
 
 @app.on_event("startup")
 async def init_db():
-    await settings.initialize_database()
+    await settings.initialize_database(default_database='test')
 
 if __name__ == "__main__":
     uvicorn.run('main:app', host="0.0.0.0", port=8080, reload=True)

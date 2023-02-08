@@ -10,9 +10,9 @@ from pydantic import BaseSettings, BaseModel
 class Settings(BaseSettings):
     DATABASE_URL: Optional[str] = None
 
-    async def initialize_database(self):
+    async def initialize_database(self, default_database=None):
         client = AsyncIOMotorClient(self.DATABASE_URL)
-        await init_beanie(database=client.get_default_database('test'),
+        await init_beanie(database=client.get_default_database(default_database),
                           document_models=[Event, User])
 
     class Config:
