@@ -55,20 +55,23 @@ async def update_event(id: PydanticObjectId, body: EventUpdate, user: str = Depe
 
 
 @router.delete("/{id}")
-async def delete_event(id: int, user: str = Depends(authenticate)) -> dict:
+async def delete_event(id: PydanticObjectId, user: str = Depends(authenticate)) -> dict:
     event = await event_database.get(id)
     if event.creator != user:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Operation not allowed."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Event not found"
         )
-    event = await event_database.delete(id)
     if not event:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Event with supplied ID doesn't Exist."
+            detail="Event with supplied ID does not exist"
         )
-    return {"message": "Event delete Successfully."}
+    await event_database.delete(id)
+
+    return {
+        "message": "Event deleted successfully."
+    }
 
 
 @router.delete("/")

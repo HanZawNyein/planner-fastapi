@@ -5,7 +5,7 @@ from auth.jwt_handler import create_access_token
 from models.events import Event
 
 
-@pytest.fixture(scope="modules")
+@pytest.fixture(scope="module")
 async def access_token() -> str:
     return create_access_token("testuser@packt.com")
 
@@ -25,16 +25,24 @@ async def mock_event() -> Event:
 
 
 @pytest.mark.asyncio
-async def test_get_events(default_client: httpx.AsyncClient, mock_event: Event) -> None:
-    response = await default_client.get("/event/")
+async def test_get_events(default_client: httpx.AsyncClient, mock_event: Event, access_token: str) -> None:
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}"
+    }
+    response = await default_client.get("/event/", headers=headers)
     assert response.status_code == 200
     assert response.json()[0]["_id"] == str(mock_event.id)
 
 
 @pytest.mark.asyncio
-async def test_get_event(default_client: httpx.AsyncClient, mock_event: Event) -> None:
+async def test_get_event(default_client: httpx.AsyncClient, mock_event: Event, access_token: str) -> None:
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}"
+    }
     url = f"/event/{str(mock_event.id)}"
-    response = await default_client.get(url)
+    response = await default_client.get(url, headers=headers)
     assert response.status_code == 200
     assert response.json()["creator"] == mock_event.creator
     assert response.json()["_id"] == str(mock_event.id)
@@ -59,7 +67,7 @@ async def test_post_event(default_client: httpx.AsyncClient, access_token: str) 
         "Authorization": f"Bearer {access_token}"
     }
     test_response = {
-        "message": "Event created successfully"
+        "message": "Event created Successfully."
     }
     response = await default_client.post("/event/new", json=payload, headers=headers)
     assert response.status_code == 200
@@ -67,8 +75,12 @@ async def test_post_event(default_client: httpx.AsyncClient, access_token: str) 
 
 
 @pytest.mark.asyncio
-async def test_get_events_count(default_client: httpx.AsyncClient) -> None:
-    response = await default_client.get("/event/")
+async def test_get_events_count(default_client: httpx.AsyncClient, access_token: str) -> None:
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}"
+    }
+    response = await default_client.get("/event/", headers=headers)
     events = response.json()
     assert response.status_code == 200
     assert len(events) == 2
@@ -94,20 +106,28 @@ async def test_delete_event(default_client: httpx.AsyncClient, mock_event: Event
     test_response = {
         "message": "Event deleted successfully."
     }
+
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {access_token}"
     }
+
     url = f"/event/{mock_event.id}"
+
     response = await default_client.delete(url, headers=headers)
+
     assert response.status_code == 200
     assert response.json() == test_response
 
 
 @pytest.mark.asyncio
-async def test_get_event_again(default_client: httpx.AsyncClient, mock_event: Event) -> None:
+async def test_get_event_again(default_client: httpx.AsyncClient, mock_event: Event, access_token: str) -> None:
     url = f"/event/{str(mock_event.id)}"
-    response = await default_client.get(url)
-    assert response.status_code == 200
-    assert response.json()["creator"] == mock_event.creator
-    assert response.json()["_id"] == str(mock_event.id)
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}"
+    }
+    response = await default_client.get(url, headers=headers)
+    assert response.status_code == 404
+    # assert response.json()["creator"] == mock_event.creator
+    # assert response.json()["_id"] == str(mock_event.id)
