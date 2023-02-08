@@ -1,12 +1,24 @@
-from fastapi import FastAPI
-from routes.users import router as user_router
-from routes.events import router as events_router
-from database.connection import Settings
-
 import uvicorn
+from database.connection import Settings
+from routes.events import router as events_router
+from routes.users import router as user_router
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+# origins
+origins = ["*"]
+
 
 app = FastAPI()
 settings = Settings()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 app.include_router(user_router, prefix="/user")
 app.include_router(events_router, prefix="/event")
