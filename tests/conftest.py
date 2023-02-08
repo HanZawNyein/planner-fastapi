@@ -13,6 +13,10 @@ from models.users import User
 def event_loop():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
+    # try:
+    #     asyncio.run(main(loop=loop))
+    # except KeyboardInterrupt:
+    #     pass
     yield loop
     loop.close()
 
