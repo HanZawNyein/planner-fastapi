@@ -3,7 +3,8 @@ import pytest
 
 from auth.jwt_handler import create_access_token
 from models.events import Event
-from tests.test_fixture import mock_event,access_token
+from tests.test_fixture import mock_event, access_token
+
 
 @pytest.mark.asyncio
 async def test_get_events(default_client: httpx.AsyncClient, mock_event: Event, access_token: str) -> None:
@@ -108,7 +109,11 @@ async def test_get_event_again(default_client: httpx.AsyncClient, mock_event: Ev
         "Content-Type": "application/json",
         "Authorization": f"Bearer {access_token}"
     }
+
+    test_response = {
+        'detail': "Event Supplied ID Doesn't Exist."
+    }
+
     response = await default_client.get(url, headers=headers)
     assert response.status_code == 404
-    # assert response.json()["creator"] == mock_event.creator
-    # assert response.json()["_id"] == str(mock_event.id)
+    assert response.json() == test_response
